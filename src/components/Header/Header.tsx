@@ -15,8 +15,9 @@ function Header() {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        router.push(`/address/${e.target.mainSearch.value}`, `/address/${e.target.mainSearch.value}`)
-        setSearchInput('')
+        e.target.mainSearch.blur() // Remove mobile keyboard after searching
+        router.push(`/address/${e.target.mainSearch.value}`, `/address/${e.target.mainSearch.value}`) // Redirect to address page
+        setSearchInput('') // Reset search input to keep page clean
     }
 
     return (
