@@ -11,6 +11,8 @@ import { Canvas, useFrame } from '@react-three/fiber'
 const Home: NextPage = () => {
   const hello = api.example.hello.useQuery({ text: "from tRPC" });
 
+  const currentBlockTransactions = [1, 2, 3, 4]
+
   return (
     <>
       <Head>
@@ -21,18 +23,19 @@ const Home: NextPage = () => {
       <main className="flex min-h-screen flex-col items-center bg-[#FBFDFF] px-8">
 
         <div className="max-w-[1536px] w-full">
-          <div className="w-full h-[40rem] rounded-[2rem] bg-gradient-to-b from-green-400 to-green-600 mt-4 flex flex-col justify-start md:justify-center p-8 py-16 md:p-20">
-            <h1 className="text-6xl font-bold text-white mb-12">Explore Freedom.</h1>
-            <form className="w-full relative flex items-center">
-              <Search className="absolute left-8 text-white stroke-[4px] w-8 h-8" />
-              <input type="text" placeholder="Search by Address / Txn Hash / Block / Token / Domain Name" className="shadow-inner w-full text-xl text-white rounded-full py-8 px-8 pl-20 bg-green-700 placeholder-white/50 focus:outline-none focus:ring focus:ring-white/80 transition" />
+          <div className=" relative w-full h-[40rem] rounded-[2rem] bg-gradient-to-b from-green-400 to-green-600 mt-4 flex flex-col justify-start md:justify-center p-8 py-16 pb-0 md:pb-0 md:p-20">
+            <h1 className="text-4xl md:text-6xl font-bold text-white/90 mb-12 z-10">Explore Freedom.</h1>
+            <form className="w-full relative flex items-center z-10">
+              <Search className="absolute left-8 text-white stroke-[4px] w-8 h-8 z-10" />
+              <input type="text" placeholder="Search by Address / Txn Hash / Block / Token / Domain Name" className="shadow-inner backdrop-blur w-full text-xl text-white rounded-full py-8 px-8 pl-20 bg-green-700/80 placeholder-white/50 focus:outline-none focus:ring focus:ring-white/80 transition" />
             </form>
-            <Canvas className="">
-              <ambientLight />
-              <pointLight position={[10, 10, 10]} />
-              <BlockViewer3D position={[-1.2, 0, 0]} />
-              <BlockViewer3D position={[1.2, 0, 0]} />
-            </Canvas>
+            <div className="absolute h-full flex right-0 top-0 w-full lg:w-1/2">
+              <Canvas>
+                <ambientLight />
+                <pointLight position={[10, 10, 10]} />
+                <BlockViewer3D position={[0, 0, 0]} scale={3} />
+              </Canvas>
+            </div>
           </div>
         </div>
 
