@@ -15,10 +15,9 @@ function Header() {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        console.log(e.target.mainSearch.value)
         router.push(`/address/${e.target.mainSearch.value}`, `/address/${e.target.mainSearch.value}`)
+        setSearchInput('')
     }
-
 
     return (
         <header className="flex justify-center bg-[#FBFDFF] px-8">
