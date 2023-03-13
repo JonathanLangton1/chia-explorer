@@ -35,7 +35,7 @@ function Address() {
       }, [router.isReady, router.asPath])
 
       if (isLoading) return (
-        <div className='px-8 flex justify-center mt-16'>
+        <div className='px-8 flex justify-center pt-16 bg-[#FBFDFF] h-screen'>
             {/* <Loader className='animate-spin text-gray-400' /> */}
             <img src="https://i.ibb.co/SQg33X7/community-Icon-a91zo8ahaz471-removebg-preview.png" alt="Chia Explorer logo" className='w-16 h-16 animate-pulse grayscale' />
         </div>
