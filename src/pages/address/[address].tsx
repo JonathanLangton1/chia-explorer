@@ -1,5 +1,5 @@
 import { DollarSign, Circle } from "react-feather";
-import { GetServerSideProps } from 'next';
+import { type GetServerSideProps } from 'next';
 import { api } from '../../utils/api';
 
 interface AddressPageProps {
