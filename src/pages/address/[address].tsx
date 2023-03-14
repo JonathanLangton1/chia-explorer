@@ -1,5 +1,6 @@
 import { DollarSign, Circle } from "react-feather";
 import { GetServerSideProps } from 'next';
+import { api } from '../../utils/api';
 
 interface AddressPageProps {
     addressData: {
@@ -8,18 +9,21 @@ interface AddressPageProps {
         balance: string
         flag: boolean
     },
-    chiaPriceUsd: {
+    chiaPrice: {
         usd: number
+        gbp: number
     }
 }
 
-function Address({ addressData, chiaPriceUsd }: AddressPageProps) {
+function Address({ addressData, chiaPrice }: AddressPageProps) {
+    const testQuery = api.example.hello.useQuery({text: 'Jonathan'})
+
       return (
         <div className="w-full flex justify-center bg-[#FBFDFF] min-h-screen px-8">
             <div className="max-w-[1536px] w-full flex flex-col gap-8">
 
                 <div className='bg-green-600 py-8 px-16 rounded-[2rem]'>
-                    <p className='text-white/80 text-2xl font-medium'>{addressData.address}</p>
+                    <p className='text-white/80 text-2xl font-medium truncate ...'>{addressData.address}</p>
                 </div>
 
 
@@ -42,9 +46,11 @@ function Address({ addressData, chiaPriceUsd }: AddressPageProps) {
                         </div>
                         <div>
                             <p className='text-[18px] font-medium'>Fiat Value</p>
-                            <p className='font-bold text-2xl'>${Math.round((addressData.balance * chiaPriceUsd + Number.EPSILON) * 100) / 100}</p>
+                            <p className='font-bold text-2xl'>${Math.round((Number(addressData.balance) * chiaPrice.usd + Number.EPSILON) * 100) / 100}</p>
                         </div>
                     </div>
+
+                    <p>{testQuery.data?.greeting}</p>
 
                 </div>
 
@@ -57,19 +63,42 @@ function Address({ addressData, chiaPriceUsd }: AddressPageProps) {
 export default Address;
 
 
+interface AddressData {
+    address: string
+    txCount: number
+    balance: string
+    flag: boolean
+}
+
+interface ChiaPrice {
+    chia: {
+        usd: number
+        gbp: number
+    }
+}
+
 export const getServerSideProps: GetServerSideProps = async (context) => {
-    const { address } = context.query;
-    const res = await fetch(`https://www.chia.tt/api/chia/blockchain/address/${address}`);
-    const addressData = await res.json();
-    const res1 = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=chia&vs_currencies=usd%2Cgbp');
-    const chiaStats = await res1.json();
-    const chiaPriceUsd = chiaStats['chia']['usd']
+    // Get Address Info
+    const address = context.query.address as string;
+    let addressData;
+    await fetch(`https://www.chia.tt/api/chia/blockchain/address/${address}`)
+    .then(res => res.json())
+    .then((res: AddressData) => {
+        addressData = res;
+    })
+
+    // Get Chia Price
+    let chiaPrice;
+    await fetch('https://api.coingecko.com/api/v3/simple/price?ids=chia&vs_currencies=usd%2Cgbp')
+    .then(res => res.json())
+    .then((res: ChiaPrice) => {
+        chiaPrice = res['chia'];
+    })
 
     return {
         props: {
             addressData,
-            chiaPriceUsd
-
+            chiaPrice
         }
     }
 }
