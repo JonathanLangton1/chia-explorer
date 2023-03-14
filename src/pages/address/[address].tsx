@@ -1,6 +1,5 @@
 import { DollarSign, Circle } from "react-feather";
 import { type GetServerSideProps } from 'next';
-import { api } from '../../utils/api';
 
 interface AddressPageProps {
     addressData: {
@@ -16,7 +15,6 @@ interface AddressPageProps {
 }
 
 function Address({ addressData, chiaPrice }: AddressPageProps) {
-    const testQuery = api.example.hello.useQuery({text: 'Jonathan'})
 
       return (
         <div className="w-full flex justify-center bg-[#FBFDFF] min-h-screen px-8">
@@ -49,8 +47,6 @@ function Address({ addressData, chiaPrice }: AddressPageProps) {
                             <p className='font-bold text-2xl'>${Math.round((Number(addressData.balance) * chiaPrice.usd + Number.EPSILON) * 100) / 100}</p>
                         </div>
                     </div>
-
-                    <p>{testQuery.data?.greeting}</p>
 
                 </div>
 

@@ -1,33 +1,42 @@
 import * as React from 'react';
-import { useState } from 'react';
+import { useState, type ChangeEvent, type FormEvent } from 'react';
 import { useRouter } from 'next/router'
 import Link from 'next/link';
 import { Search } from "react-feather";
+import Image from 'next/image';
 
 
 function Header() {
-    const [searchInput, setSearchInput] = useState();
+    const [searchInput, setSearchInput] = useState('');
     const router = useRouter();
 
-    const handleChange = (e) => {
-        setSearchInput(e.target.value)
+    const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+        setSearchInput(e.target.value);
     }
 
-    const handleSubmit = (e) => {
+    const handleSubmit = (e: FormEvent<HTMLFormElement>): void => {
         e.preventDefault();
-        e.target.mainSearch.blur() // Remove mobile keyboard after searching
+        const target = e.target as typeof e.target & {
+          mainSearch: HTMLInputElement & { blur(): void };
+        };
+        target.mainSearch.blur(); // Remove mobile keyboard after searching
         if (searchInput.trim()) {
-            router.push(`/address/${e.target.mainSearch.value}`, `/address/${e.target.mainSearch.value}`) // Redirect to address page
+          router.push(`/address/${target.mainSearch.value}`, `/address/${target.mainSearch.value}`) // Redirect to address page
+            .catch(error => {
+              // Handle error here
+              console.error(error);
+            });
         }
-        setSearchInput('') // Reset search input to keep page clean
-    }
+        setSearchInput(''); // Reset search input to keep page clean
+      };
+      
 
     return (
         <header className="flex justify-center bg-[#FBFDFF] px-8">
             <div className="max-w-[1536px] w-full gap-8 md:gap-12 flex py-8 items-center flex-col md:flex-row">
                 <Link href={'/'}>
                     <div className='flex items-center gap-2 hover:opacity-80 transition w-max'>
-                        <img src="https://i.ibb.co/SQg33X7/community-Icon-a91zo8ahaz471-removebg-preview.png" alt="Chia Explorer logo" className='w-16 h-16' />
+                        <Image src="/images/chia-logo.png" width={64} height={64} alt="Chia Explorer logo" className='w-16 h-16' />
                         <p className="leading-6 font-black text-2xl">Chia<br></br>Explorer</p>
                     </div>
                 </Link>

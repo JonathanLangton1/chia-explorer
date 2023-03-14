@@ -2,7 +2,7 @@ import { type NextPage } from "next";
 import Head from "next/head";
 import { signIn, signOut, useSession } from "next-auth/react";
 import { Search } from "react-feather";
-import BlockViewer3D from "~/components/Header/BlockViewer3D/BlockViewer3D";
+import BlockViewer3D from "~/components/BlockViewer3D/BlockViewer3D";
 import { api } from "~/utils/api";
 import { Canvas } from '@react-three/fiber'
 
