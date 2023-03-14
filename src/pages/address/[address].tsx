@@ -1,5 +1,6 @@
 import { DollarSign, Circle } from "react-feather";
 import { type GetServerSideProps } from 'next';
+import { motion } from "framer-motion"
 
 interface AddressPageProps {
     addressData: {
