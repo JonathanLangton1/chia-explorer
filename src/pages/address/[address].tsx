@@ -1,5 +1,5 @@
 import { DollarSign, Circle } from "react-feather";
-import { type GetServerSideProps } from 'next';
+import { type GetStaticProps, type GetStaticPaths } from 'next';
 import { motion } from "framer-motion"
 
 interface AddressPageProps {
@@ -74,9 +74,16 @@ interface ChiaPrice {
     }
 }
 
-export const getServerSideProps: GetServerSideProps = async (context) => {
+export const getStaticPaths: GetStaticPaths = () => {
+    return {
+      paths: [],
+      fallback: 'blocking'
+    };
+  };  
+
+export const getStaticProps: GetStaticProps = async (context) => {
     // Get Address Info
-    const address = context.query.address as string;
+    const address = context.params?.address as string;
     let addressData;
     await fetch(`https://www.chia.tt/api/chia/blockchain/address/${address}`)
     .then(res => res.json())
