@@ -64,3 +64,9 @@ model VerificationToken {
 
     @@unique([identifier, token])
 }
+
+model ChiaPrice {
+    usd             Float
+    gbp             Float
+    lastUpdated     DateTime    @updatedAt
+}
