@@ -1,9 +1,10 @@
-import * as React from 'react';
 import { useState, type ChangeEvent, type FormEvent } from 'react';
-import { useRouter } from 'next/router'
-import Link from 'next/link';
+import { useRouter } from 'next/router';
 import { Search } from "react-feather";
+import toast from 'react-hot-toast';
+import * as React from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 
 
 function Header() {
@@ -21,9 +22,9 @@ function Header() {
         };
         target.mainSearch.blur(); // Remove mobile keyboard after searching
         if (searchInput.trim()) {
-          router.push(`/address/${target.mainSearch.value}`, `/address/${target.mainSearch.value}`) // Redirect to address page
+          router.push(`/address/${target.mainSearch.value}`) // Redirect to address page
             .catch(error => {
-              // Handle error here
+              toast.error('Failed to redirect to page')
               console.error(error);
             });
         }
