@@ -66,6 +66,7 @@ model VerificationToken {
 }
 
 model ChiaPrice {
+    id              Int         @id @default(autoincrement())
     usd             Float
     gbp             Float
     lastUpdated     DateTime    @updatedAt
