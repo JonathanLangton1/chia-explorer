@@ -21,6 +21,9 @@ const server = z.object({
   // Add `.min(1) on ID and SECRET if you want to make sure they're not empty
   DISCORD_CLIENT_ID: z.string(),
   DISCORD_CLIENT_SECRET: z.string(),
+  CHIA_NODE_HOST: z.string(),
+  CHIA_RPC_PRIVATE_DAEMON_CRT: z.string(),
+  CHIA_RPC_PRIVATE_DAEMON_KEY: z.string(),
 });
 
 /**
@@ -44,6 +47,9 @@ const processEnv = {
   NEXTAUTH_URL: process.env.NEXTAUTH_URL,
   DISCORD_CLIENT_ID: process.env.DISCORD_CLIENT_ID,
   DISCORD_CLIENT_SECRET: process.env.DISCORD_CLIENT_SECRET,
+  CHIA_NODE_HOST: process.env.CHIA_NODE_HOST,
+  CHIA_RPC_PRIVATE_DAEMON_CRT: process.env.CHIA_RPC_PRIVATE_DAEMON_CRT,
+  CHIA_RPC_PRIVATE_DAEMON_KEY: process.env.CHIA_RPC_PRIVATE_DAEMON_KEY,
   // NEXT_PUBLIC_CLIENTVAR: process.env.NEXT_PUBLIC_CLIENTVAR,
 };
 
