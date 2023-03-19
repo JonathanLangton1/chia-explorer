@@ -15,14 +15,14 @@ function Header() {
         setSearchInput(e.target.value);
     }
 
-    const handleSubmit = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
+    const handleSubmit = (e: FormEvent<HTMLFormElement>): void => {
         e.preventDefault();
         const target = e.target as typeof e.target & {
           mainSearch: HTMLInputElement & { blur(): void };
         };
         target.mainSearch.blur(); // Remove mobile keyboard after searching
         if (searchInput.trim()) {
-          await router.push(`/address/${target.mainSearch.value}`) // Redirect to address page
+          router.push(`/address/${target.mainSearch.value}`) // Redirect to address page
             .catch(error => {
               toast.error('Failed to redirect to page')
               console.error(error);
@@ -41,7 +41,7 @@ function Header() {
                         <p className="leading-6 font-black text-2xl">Chia<br></br>Explorer</p>
                     </div>
                 </Link>
-                <form onSubmit={void handleSubmit} className="w-full relative flex items-center group">
+                <form onSubmit={handleSubmit} className="w-full relative flex items-center group">
                     <input type="text" onChange={handleChange} value={searchInput} name="mainSearch" id="mainSearch" placeholder="Search by Address / Txn Hash / Block / Token / Domain Name" className="peer bg-slate-200 py-4 pl-16 px-8 rounded-full w-full focus:outline-none focus:ring focus:ring-black/80 transition font-medium placeholder-gray-400/50" />
                     <Search className="absolute left-6 stroke-[4px] text-gray-400 w-5 h-5 group-hover:text-black/80 peer-focus:text-black/80 peer-focus:rotate-90 transition" />
                 </form>

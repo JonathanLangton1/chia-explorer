@@ -1,3 +1,4 @@
+import ErrorBoundary from "~/components/ErrorBoundary/ErrorBoundary";
 import { SessionProvider } from "next-auth/react";
 import Header from "~/components/Header/Header";
 import NextNProgress from 'nextjs-progressbar';
@@ -17,7 +18,9 @@ const MyApp: AppType<{ session: Session | null }> = ({
     <SessionProvider session={session}>
       <NextNProgress color="#16a34a" startPosition={0.8} />
       <Header />
-      <Component {...pageProps} />
+      <ErrorBoundary>
+        <Component {...pageProps} />
+      </ErrorBoundary>
       <Toaster position="bottom-right" />
     </SessionProvider>
   );
