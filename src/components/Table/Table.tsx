@@ -1,138 +1,195 @@
+import { useReactTable, getCoreRowModel, getFilteredRowModel, getPaginationRowModel, flexRender,} from '@tanstack/react-table'
 import { ChevronsLeft, ChevronLeft, ChevronsRight, ChevronRight } from 'react-feather';
-import type { Column, HeaderGroup, Row, TableInstance, TableState } from "react-table";
 import { useAutoAnimate } from '@formkit/auto-animate/react'
-import { useTable, usePagination } from "react-table";
 
-interface Props<T extends object> {
-  data: T[];
-  columns: readonly Column<T>[];
+interface transactionData {
+  txnHash: string
+  type: string
+  age: number
+  block: number
+  from: string
+  direction: string
+  to: string
+  value: number
 }
 
-interface ExtendedTableInstance<T extends object> extends TableInstance<T> {
-  canPreviousPage: boolean;
-  canNextPage: boolean;
-  page: Row<T>[];
-  pageOptions: {
-    pageIndex: number;
-    pageSize: number;
-  }[];
-  pageCount: number;
-  gotoPage: (pageIndex: number) => void;
-  nextPage: () => void;
-  previousPage: () => void;
-  setPageSize: (number: number) => void;
-  state: Partial<TableState<T>> & { pageIndex: number, pageSize: number };
+interface columns {
+  header: string
+  accessorKey: string
+  cell?: (props: {getValue: () => any}) => any
 }
 
+function Table({ data, columns}: { data: transactionData[], columns: columns[]}) {
 
-function Table<T extends object>({ columns, data }: Props<T>) {
   const [animationParent] = useAutoAnimate()
-  const tableInstance = useTable<T>({ columns, data, initialState: { pageIndex: 0, pageSize: 10 } as Partial<TableState<T>>}, usePagination) as ExtendedTableInstance<T>;
 
-  const {
-    getTableProps,
-    getTableBodyProps,
-    headerGroups,
-    page,
-    prepareRow,
-    canPreviousPage,
-    canNextPage,
-    pageOptions,
-    pageCount,
-    gotoPage,
-    previousPage,
-    nextPage,
-    setPageSize,
-    state: { pageIndex, pageSize }
-  } = tableInstance;
-
+  const table = useReactTable({
+    data,
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    debugTable: true,
+  })
 
   return (
     <>
-      <table {...getTableProps()} className="min-w-full text-left">
+      <table className="min-w-full text-left">
         <thead className="border-b font-medium dark:border-neutral-500">
-          {headerGroups.map((headerGroup: HeaderGroup<T>) => (
-            <tr {...headerGroup.getHeaderGroupProps()} key={headerGroup.id} className="whitespace-nowrap">
-              {headerGroup.headers.map((column) => (
-                <th {...column.getHeaderProps()} key={column.id} className="px-6 py-4">
-                  {column.render("Header")}
-                </th>
-              ))}
+          {table.getHeaderGroups().map(headerGroup => (
+            <tr key={headerGroup.id} className="whitespace-nowrap">
+              {headerGroup.headers.map(header => {
+                return (
+                  <th key={header.id} colSpan={header.colSpan} className="px-6 py-4">
+                    {header.isPlaceholder ? null : (
+                      <div>
+                        {flexRender(
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
+                        {/* {header.column.getCanFilter() ? (
+                          <div>
+                            <Filter column={header.column} table={table} />
+                          </div>
+                        ) : null} */}
+                      </div>
+                    )}
+                  </th>
+                )
+              })}
             </tr>
           ))}
         </thead>
-        <tbody {...getTableBodyProps()} ref={animationParent}>
-          {page.map((row: Row<T>) => {
-            prepareRow(row);
+        <tbody ref={animationParent}>
+          {table.getRowModel().rows.map(row => {
             return (
-              <tr {...row.getRowProps()} key={row.id} className="border-b transition duration-300 ease-in-out hover:bg-neutral-100 dark:border-neutral-500 dark:hover:bg-neutral-600">
-                {row.cells.map((cell) => (
-                  <td {...cell.getCellProps()} key={cell.column.id} className="whitespace-nowrap px-6 py-4">
-                    {cell.render("Cell")}
-                  </td>
-                ))}
+              <tr key={row.id} className="border-b transition duration-300 ease-in-out hover:bg-neutral-100 dark:border-neutral-500 dark:hover:bg-neutral-600">
+                {row.getVisibleCells().map(cell => {
+                  return (
+                    <td key={cell.id} className="whitespace-nowrap px-6 py-4">
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext()
+                      )}
+                    </td>
+                  )
+                })}
               </tr>
-            );
+            )
           })}
         </tbody>
       </table>
+
       {/* Pagination */}
       <div className="flex py-4 items-center">
-        
-          {/* Page navigation buttons */}
-          <button onClick={() => gotoPage(0)} disabled={!canPreviousPage}>
-            <ChevronsLeft />
-          </button>
 
-          <button onClick={() => previousPage()} disabled={!canPreviousPage}>
-            <ChevronLeft />
-          </button>
+        {/* Page navigation buttons */}
+        <button className="disabled:opacity-30 transition" onClick={() => table.setPageIndex(0)} disabled={!table.getCanPreviousPage()}>
+          <ChevronsLeft />
+        </button>
 
-          <button onClick={() => nextPage()} disabled={!canNextPage}>
-            <ChevronRight />
-          </button>
+        <button className="disabled:opacity-30 transition" onClick={() => table.previousPage()} disabled={!table.getCanPreviousPage()}>
+          <ChevronLeft />
+        </button>
 
-          <button onClick={() => gotoPage(pageCount - 1)} disabled={!canNextPage}>
-            <ChevronsRight />
-          </button>
+        <button className="disabled:opacity-30 transition" onClick={() => table.nextPage()} disabled={!table.getCanNextPage()}>
+          <ChevronRight />
+        </button>
 
-          {/* Page x of x indicator */}
-          <span className='pl-8 whitespace-nowrap'>
-            Page
-            <span className='text-green-600 font-bold pl-1'>{pageIndex + 1}</span> of {pageOptions.length}
-          </span>
+        <button className="disabled:opacity-30 transition" onClick={() => table.setPageIndex(table.getPageCount() - 1)} disabled={!table.getCanNextPage()}>
+          <ChevronsRight />
+        </button>
 
-          {/* Go to page input */}
-          <span className='px-8 flex items-center whitespace-nowrap'>
-             Go to page
-            <input
-              type="number"
-              className="border-2 border-gray-300 rounded-md bg-transparent pl-2 w-12 ml-2"
-              defaultValue={pageIndex + 1}
-              onChange={e => {
-                const page = e.target.value ? Number(e.target.value) - 1 : 0
-                gotoPage(page)
-              }}
-            />
-          </span>
+        {/* Page x of x indicator */}
+        <span className='pl-8 whitespace-nowrap'>
+          Page
+          <span className='text-green-600 font-bold pl-1'>{table.getState().pagination.pageIndex + 1}</span> of {table.getPageCount()}
+        </span>
 
-          {/* Change number of transactions per page */}
-          <select
-            value={pageSize}
+        {/* Go to page input */}
+        <span className="px-8 flex items-center whitespace-nowrap">
+          Go to page:
+          <input
+            type="number"
+            defaultValue={table.getState().pagination.pageIndex + 1}
             onChange={e => {
-              setPageSize(Number(e.target.value))
+              const page = e.target.value ? Number(e.target.value) - 1 : 0
+              table.setPageIndex(page)
             }}
-            >
-            {[10, 20, 30, 40, 50].map(pageSize => (
-              <option key={pageSize} value={pageSize}>
-                Show {pageSize}
-              </option>
-            ))}
-          </select>
+            className="border-2 border-gray-300 rounded-md bg-transparent pl-2 w-12 ml-2"
+          />
+        </span>
+
+        {/* Change number of transactions per page */}
+        <select
+          value={table.getState().pagination.pageSize}
+          onChange={e => {
+            table.setPageSize(Number(e.target.value))
+          }}
+        >
+          {[10, 20, 30, 40, 50].map(pageSize => (
+            <option key={pageSize} value={pageSize}>
+              Show {pageSize}
+            </option>
+          ))}
+        </select>
 
       </div>
     </>
-  );
+  )
 }
+
+// Code for filter boxes on columns if needed
+
+// function Filter({
+//   column,
+//   table,
+// }: {
+//   column: Column<any, any>
+//   table: ReactTable<any>
+// }) {
+//   const firstValue = table
+//     .getPreFilteredRowModel()
+//     .flatRows[0]?.getValue(column.id)
+
+//   const columnFilterValue = column.getFilterValue()
+
+//   return typeof firstValue === 'number' ? (
+//     <div className="flex space-x-2">
+//       <input
+//         type="number"
+//         value={(columnFilterValue as [number, number])?.[0] ?? ''}
+//         onChange={e =>
+//           column.setFilterValue((old: [number, number]) => [
+//             e.target.value,
+//             old?.[1],
+//           ])
+//         }
+//         placeholder={`Min`}
+//         className="w-24 border rounded"
+//       />
+//       <input
+//         type="number"
+//         value={(columnFilterValue as [number, number])?.[1] ?? ''}
+//         onChange={e =>
+//           column.setFilterValue((old: [number, number]) => [
+//             old?.[0],
+//             e.target.value,
+//           ])
+//         }
+//         placeholder={`Max`}
+//         className="w-24 border rounded"
+//       />
+//     </div>
+//   ) : (
+//     <input
+//       type="text"
+//       value={(columnFilterValue ?? '') as string}
+//       onChange={e => column.setFilterValue(e.target.value)}
+//       placeholder={`Search...`}
+//       className="border-2 border-gray-300 rounded-md bg-transparent pl-2 ml-2"
+//     />
+//   )
+// }
 
 export default Table

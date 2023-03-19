@@ -5,7 +5,6 @@ import relativeTime from "dayjs/plugin/relativeTime";
 import { address_to_puzzle_hash } from "chia-utils";
 import 'react-tooltip/dist/react-tooltip.css';
 import Table from "~/components/Table/Table";
-import type { Column } from "react-table";
 import { Tooltip } from 'react-tooltip';
 import { RPCAgent } from "chia-agent";
 import toast from 'react-hot-toast';
@@ -38,46 +37,44 @@ function Address({ addressData, chiaPrice, balance, transactions }: AddressPageP
     const columns = useMemo(
         () => [
             {
-              Header: 'TXN HASH',
-              accessor: 'txnHash',
-              Cell: (props: {value: string}) => <Link href={`/transaction/${props.value}`} className="text-green-600">{props.value.slice(0, 6).toString() + '...' + props.value.slice(-4).toString()}</Link>
+              header: 'TXN HASH',
+              accessorKey: 'txnHash',
+              cell: (props: {getValue: () => string}) => <Link href={`/transaction/${props.getValue()}`} className="text-green-600">{props.getValue().slice(0, 6).toString() + '...' + props.getValue().slice(-4).toString()}</Link>
             },
             {
-              Header: 'TYPE',
-              accessor: 'type',
-              Cell: (props: {value: string}) => <span>{props.value}</span>
+              header: 'TYPE',
+              accessorKey: 'type',
             },
             {
-              Header: 'AGE',
-              accessor: 'age',
-              Cell: (props: {value: number}) => <span data-tooltip-id="my-tooltip" data-tooltip-content={dayjs(new Date( props.value *1000)).format('DD/MM/YYYY HH:mm:ss')}>{dayjs(new Date( props.value *1000)).fromNow()}<Tooltip id="my-tooltip" style={{ borderRadius: '0.5rem' }} /></span>
+              header: 'AGE',
+              accessorKey: 'age',
+              cell: (props: {getValue: () => number}) => <span data-tooltip-id="my-tooltip" data-tooltip-content={dayjs(new Date( props.getValue() *1000)).format('DD/MM/YYYY HH:mm:ss')}>{dayjs(new Date( props.getValue() *1000)).fromNow()}<Tooltip id="my-tooltip" style={{ borderRadius: '0.5rem' }} /></span>
             },
             {
-              Header: 'BLOCK',
-              accessor: 'block',
-              Cell: (props: {value: number}) => <Link href={`/block/${props.value}`} className="text-green-600">{props.value.toLocaleString()}</Link>
+              header: 'BLOCK',
+              accessorKey: 'block',
+              cell: (props: {getValue: () => number}) => <Link href={`/block/${props.getValue()}`} className="text-green-600">{props.getValue().toLocaleString()}</Link>
             },
             {
-              Header: 'FROM',
-              accessor: 'from',
-              Cell: (props: {value: string}) => addressData.address != props.value ? <Link href={`/address/${props.value}`} className="text-green-600">{props.value.slice(0, 6).toString() + '...' + props.value.slice(-4).toString()}</Link> : props.value.slice(0, 6).toString() + '...' + props.value.slice(-4).toString()
+              header: 'FROM',
+              accessorKey: 'from',
+              cell: (props: {getValue: () => string}) => addressData.address != props.getValue() ? <Link href={`/address/${props.getValue()}`} className="text-green-600">{props.getValue().slice(0, 6).toString() + '...' + props.getValue().slice(-4).toString()}</Link> : props.getValue().slice(0, 6).toString() + '...' + props.getValue().slice(-4).toString()
             },
             {
-              Header: '',
-              accessor: 'direction',
-              Cell: (props: {value: string}) => <div className={`text-xs py-2 rounded-md w-12 flex font-bold justify-center items-center ${props.value === 'IN' ? 'bg-green-200 text-green-600': 'bg-amber-100 text-amber-600'}`}>{props.value}</div>
+              header: '',
+              accessorKey: 'direction',
+              cell: (props: {getValue: () => string}) => <div className={`text-xs py-2 rounded-md w-12 flex font-bold justify-center items-center ${props.getValue() === 'IN' ? 'bg-green-200 text-green-600': 'bg-amber-100 text-amber-600'}`}>{props.getValue()}</div>
             },
             {
-              Header: 'TO',
-              accessor: 'to',
-              Cell: (props: {value: string}) => addressData.address != props.value ? <Link href={`/address/${props.value}`} className="text-green-600">{props.value.slice(0, 6).toString() + '...' + props.value.slice(-4).toString()}</Link> : props.value.slice(0, 6).toString() + '...' + props.value.slice(-4).toString()
+              header: 'TO',
+              accessorKey: 'to',
+              cell: (props: {getValue: () => string}) => addressData.address != props.getValue() ? <Link href={`/address/${props.getValue()}`} className="text-green-600">{props.getValue().slice(0, 6).toString() + '...' + props.getValue().slice(-4).toString()}</Link> : props.getValue().slice(0, 6).toString() + '...' + props.getValue().slice(-4).toString()
             },
             {
-              Header: 'VALUE',
-              accessor: 'value',
-              Cell: (props: {value: string}) => <span>{props.value}</span>
+              header: 'VALUE',
+              accessorKey: 'value',
             },
-        ] as Column[],
+        ],
         [addressData.address]
     )
     interface Transaction {
@@ -93,22 +90,20 @@ function Address({ addressData, chiaPrice, balance, transactions }: AddressPageP
         timestamp: number
     }
 
-    const formattedTransactions = transactions.map((transaction: Transaction) => (
-        {
-            txnHash: transaction.coin.parent_coin_info,
-            type: 'Farmer Reward',
-            age: transaction.timestamp,
-            block: transaction.confirmed_block_index,
-            from: String(transaction.confirmed_block_index).charAt(0) === '1' ? 'xch1f0ryxk6qn096hefcwrdwpuph2hm24w69jnzezhkfswk0z2jar7aq5zzpfj' : 'xch1gfp4u27zc76v2hpx4kkp6f53luw6qnyy0s8r6d9x5edr2sfle32qvrwlr7',
-            direction: String(transaction.confirmed_block_index).charAt(0) === '1' ? 'OUT' : 'IN',
-            to: String(transaction.confirmed_block_index).charAt(0) !== '1' ? 'xch1f0ryxk6qn096hefcwrdwpuph2hm24w69jnzezhkfswk0z2jar7aq5zzpfj' : 'xch1gfp4u27zc76v2hpx4kkp6f53luw6qnyy0s8r6d9x5edr2sfle32qvrwlr7',
-            value: transaction.coin.amount/1000000000000
-        }
-    ))
-
       const data = useMemo(
-        () => formattedTransactions,
-        [formattedTransactions]
+        () => transactions.map((transaction: Transaction) => (
+            {
+                txnHash: transaction.coin.parent_coin_info,
+                type: 'Farmer Reward',
+                age: transaction.timestamp,
+                block: transaction.confirmed_block_index,
+                from: String(transaction.confirmed_block_index).charAt(0) === '1' ? 'xch1f0ryxk6qn096hefcwrdwpuph2hm24w69jnzezhkfswk0z2jar7aq5zzpfj' : 'xch1gfp4u27zc76v2hpx4kkp6f53luw6qnyy0s8r6d9x5edr2sfle32qvrwlr7',
+                direction: String(transaction.confirmed_block_index).charAt(0) === '1' ? 'OUT' : 'IN',
+                to: String(transaction.confirmed_block_index).charAt(0) !== '1' ? 'xch1f0ryxk6qn096hefcwrdwpuph2hm24w69jnzezhkfswk0z2jar7aq5zzpfj' : 'xch1gfp4u27zc76v2hpx4kkp6f53luw6qnyy0s8r6d9x5edr2sfle32qvrwlr7',
+                value: transaction.coin.amount/1000000000000
+            }
+        )),
+        [transactions]
       )
 
       const copyAddress = async () => {
@@ -159,7 +154,7 @@ function Address({ addressData, chiaPrice, balance, transactions }: AddressPageP
                 
                 {/* Transaction Table */}
                 <div className="overflow-x-auto bg-white p-8 rounded-[2rem] border-slate-200 border">
-                    <Table columns={columns} data={data} />
+                <Table {...{data, columns}} />
                 </div>
 
 
