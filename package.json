@@ -34,6 +34,7 @@
     "react-hot-toast": "^2.4.0",
     "react-table": "^7.8.0",
     "react-tooltip": "^5.10.0",
+    "sharp": "^0.31.3",
     "superjson": "1.9.1",
     "three": "^0.150.1",
     "zod": "^3.20.6"
