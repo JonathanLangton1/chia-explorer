@@ -48,7 +48,8 @@ function Address({ addressData, chiaPrice, balance, transactions }: AddressPageP
             {
               header: 'AGE',
               accessorKey: 'age',
-              cell: (props: {getValue: () => number}) => <span data-tooltip-id="my-tooltip" data-tooltip-content={dayjs(new Date( props.getValue() *1000)).format('DD/MM/YYYY HH:mm:ss')}>{dayjs(new Date( props.getValue() *1000)).fromNow()}<Tooltip id="my-tooltip" style={{ borderRadius: '0.5rem' }} /></span>
+              cell: (props: {getValue: () => number}) => <span>{dayjs(new Date( props.getValue() *1000)).fromNow()}</span>
+            //   cell: (props: {getValue: () => number}) => <span data-tooltip-id="my-tooltip" data-tooltip-content={dayjs(new Date( props.getValue() *1000)).format('DD/MM/YYYY HH:mm:ss')}>{dayjs(new Date( props.getValue() *1000)).fromNow()}<Tooltip id="my-tooltip" style={{ borderRadius: '0.5rem' }} /></span>
             },
             {
               header: 'BLOCK',

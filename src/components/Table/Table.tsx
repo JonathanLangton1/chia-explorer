@@ -1,4 +1,4 @@
-import { useReactTable, getCoreRowModel, getFilteredRowModel, getPaginationRowModel, flexRender,} from '@tanstack/react-table'
+import { useReactTable, getCoreRowModel, getFilteredRowModel, getPaginationRowModel, flexRender } from '@tanstack/react-table'
 import { ChevronsLeft, ChevronLeft, ChevronsRight, ChevronRight } from 'react-feather';
 import { useAutoAnimate } from '@formkit/auto-animate/react'
 
@@ -29,7 +29,7 @@ function Table({ data, columns}: { data: transactionData[], columns: columns[]})
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
-    debugTable: true,
+    debugTable: false,
   })
 
   return (
