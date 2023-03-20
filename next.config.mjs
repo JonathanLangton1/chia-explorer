@@ -20,5 +20,8 @@ const config = {
     locales: ["en"],
     defaultLocale: "en",
   },
+  experimental: { // Remove this limit after implementing client side fetching & page attriubute for Chia RPC endpoint
+    largePageDataBytes: 2000 * 1000,
+  },
 };
 export default config;
