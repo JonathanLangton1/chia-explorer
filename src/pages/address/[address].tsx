@@ -37,42 +37,42 @@ function Address({ addressData, chiaPrice, balance, transactions }: AddressPageP
     const columns = useMemo(
         () => [
             {
-              header: 'TXN HASH',
+              header: 'Txn Hash',
               accessorKey: 'txnHash',
               cell: (props: {getValue: () => string}) => <Link href={`/transaction/${props.getValue()}`} className="text-green-600">{props.getValue().slice(0, 6).toString() + '...' + props.getValue().slice(-4).toString()}</Link>
             },
             {
-              header: 'TYPE',
+              header: 'Type',
               accessorKey: 'type',
             },
             {
-              header: 'AGE',
+              header: 'Age',
               accessorKey: 'age',
               cell: (props: {getValue: () => number}) => <span>{dayjs(new Date( props.getValue() *1000)).fromNow()}</span>
             //   cell: (props: {getValue: () => number}) => <span data-tooltip-id="my-tooltip" data-tooltip-content={dayjs(new Date( props.getValue() *1000)).format('DD/MM/YYYY HH:mm:ss')}>{dayjs(new Date( props.getValue() *1000)).fromNow()}<Tooltip id="my-tooltip" style={{ borderRadius: '0.5rem' }} /></span>
             },
             {
-              header: 'BLOCK',
+              header: 'Block',
               accessorKey: 'block',
               cell: (props: {getValue: () => number}) => <Link href={`/block/${props.getValue()}`} className="text-green-600">{props.getValue().toLocaleString()}</Link>
             },
             {
-              header: 'FROM',
+              header: 'From',
               accessorKey: 'from',
               cell: (props: {getValue: () => string}) => addressData.address != props.getValue() ? <Link href={`/address/${props.getValue()}`} className="text-green-600">{props.getValue().slice(0, 6).toString() + '...' + props.getValue().slice(-4).toString()}</Link> : props.getValue().slice(0, 6).toString() + '...' + props.getValue().slice(-4).toString()
             },
             {
               header: '',
               accessorKey: 'direction',
-              cell: (props: {getValue: () => string}) => <div className={`text-xs py-2 rounded-md w-12 flex font-bold justify-center items-center ${props.getValue() === 'IN' ? 'bg-green-200 text-green-600': 'bg-amber-100 text-amber-600'}`}>{props.getValue()}</div>
+              cell: (props: {getValue: () => string}) => <div className={`text-xs md:py-2 py-1 rounded-md w-12 flex font-bold justify-center items-center ${props.getValue() === 'IN' ? 'bg-green-200 text-green-600': 'bg-amber-100 text-amber-600'}`}>{props.getValue()}</div>
             },
             {
-              header: 'TO',
+              header: 'To',
               accessorKey: 'to',
               cell: (props: {getValue: () => string}) => addressData.address != props.getValue() ? <Link href={`/address/${props.getValue()}`} className="text-green-600">{props.getValue().slice(0, 6).toString() + '...' + props.getValue().slice(-4).toString()}</Link> : props.getValue().slice(0, 6).toString() + '...' + props.getValue().slice(-4).toString()
             },
             {
-              header: 'VALUE',
+              header: 'Value',
               accessorKey: 'value',
             },
         ],
@@ -117,20 +117,20 @@ function Address({ addressData, chiaPrice, balance, transactions }: AddressPageP
       }
 
       return (
-        <div className="w-full flex justify-center bg-[#FBFDFF] min-h-screen px-8">
+        <div className="w-full flex justify-center bg-[#FBFDFF] min-h-screen md:px-8 px-4">
             <div className="max-w-[1536px] w-full flex flex-col gap-8">
 
-                <div className='bg-green-600 py-8 px-16 rounded-[2rem] flex items-center gap-4'>
-                    <Copy onClick={() => void copyAddress()} className="text-white opacity-60 min-w-max w-5 h-5 mt-2 cursor-pointer hover:opacity-100 transition" />
+                <div className='bg-green-600 py-8 md:px-16 px-8 rounded-full justify-start items-center flex gap-4'>
+                    <Copy onClick={() => void copyAddress()} className="text-white opacity-60 min-w-[1.25rem] w-5 h-5 mt-2 cursor-pointer hover:opacity-100 transition" />
                     <p className='text-white/80 text-2xl font-medium truncate ...'>{addressData.address}</p>
                 </div>
 
 
 
-                <div className='flex md:flex-row flex-col gap-4'>
+                <div className='flex md:flex-row flex-col gap-8'>
 
                     {/* Wallet Balance */}
-                    <div className='rounded-[2rem] bg-white border-slate-200 border p-10 w-full xl:w-1/3 flex items-center gap-4'>
+                    <div className='rounded-[1rem] bg-white border-slate-200 border p-10 w-full xl:w-1/3 flex items-center gap-4'>
                         <div className='p-4 border border-slate-100 rounded-full text-green-600'>
                             <Circle className='w-8 h-8' />
                         </div>
@@ -141,7 +141,7 @@ function Address({ addressData, chiaPrice, balance, transactions }: AddressPageP
                     </div>
 
                     {/* Fiat Value */}
-                    <div className='rounded-[2rem] bg-white border-slate-200 border p-10 w-full xl:w-1/3 flex items-center gap-4'>
+                    <div className='rounded-[1rem] bg-white border-slate-200 border p-10 w-full xl:w-1/3 flex items-center gap-4'>
                         <div className='p-4 border border-slate-100 rounded-full text-green-600'>
                             <DollarSign className='w-8 h-8' />
                         </div>
@@ -154,8 +154,8 @@ function Address({ addressData, chiaPrice, balance, transactions }: AddressPageP
                 </div>
                 
                 {/* Transaction Table */}
-                <div className="overflow-x-auto bg-white p-8 rounded-[2rem] border-slate-200 border">
-                <Table {...{data, columns}} />
+                <div className="overflow-x-hidden bg-white md:p-8 rounded-[1rem] border-slate-200 border">
+                    <Table {...{data, columns, resultName: "transactions"}} />
                 </div>
 
 

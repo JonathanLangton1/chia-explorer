@@ -19,7 +19,8 @@ interface columns {
   cell?: (props: {getValue: () => any}) => any
 }
 
-function Table({ data, columns}: { data: transactionData[], columns: columns[]}) {
+function Table(
+  { data, columns, resultName='results'}: { data: transactionData[], columns: columns[], resultName: string}) {
 
   const [animationParent] = useAutoAnimate()
 
@@ -33,52 +34,59 @@ function Table({ data, columns}: { data: transactionData[], columns: columns[]})
   })
 
   return (
-    <>
-      <table className="min-w-full text-left">
-        <thead className="border-b font-medium dark:border-neutral-500">
-          {table.getHeaderGroups().map(headerGroup => (
-            <tr key={headerGroup.id} className="whitespace-nowrap">
-              {headerGroup.headers.map(header => {
-                return (
-                  <th key={header.id} colSpan={header.colSpan} className="px-6 py-4">
-                    {header.isPlaceholder ? null : (
-                      <div>
-                        {flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
-                        {/* {header.column.getCanFilter() ? (
-                          <div>
-                            <Filter column={header.column} table={table} />
-                          </div>
-                        ) : null} */}
-                      </div>
-                    )}
-                  </th>
-                )
-              })}
-            </tr>
-          ))}
-        </thead>
-        <tbody ref={animationParent}>
-          {table.getRowModel().rows.map(row => {
-            return (
-              <tr key={row.id} className="border-b transition duration-300 ease-in-out hover:bg-neutral-100 dark:border-neutral-500 dark:hover:bg-neutral-600">
-                {row.getVisibleCells().map(cell => {
+    <div className='relative max-w-full'>
+      {/* Total results */}
+      <div className='px-6 py-6 text-sm'>
+        <p>Latest {JSON.stringify(table.getState().pagination.pageSize)} from a total of <span className='text-green-600'>{data.length.toLocaleString()}</span> {resultName}</p>
+      </div>
+
+      <div className='overflow-x-auto'>
+        <table className="min-w-full text-left">
+          <thead className="border-b font-medium dark:border-neutral-500">
+            {table.getHeaderGroups().map(headerGroup => (
+              <tr key={headerGroup.id} className="whitespace-nowrap">
+                {headerGroup.headers.map(header => {
                   return (
-                    <td key={cell.id} className="whitespace-nowrap px-6 py-4">
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
+                    <th key={header.id} colSpan={header.colSpan} className="px-6 py-2 text-sm md:text-base">
+                      {header.isPlaceholder ? null : (
+                        <div>
+                          {flexRender(
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
+                          {/* {header.column.getCanFilter() ? (
+                            <div>
+                              <Filter column={header.column} table={table} />
+                            </div>
+                          ) : null} */}
+                        </div>
                       )}
-                    </td>
+                    </th>
                   )
                 })}
               </tr>
-            )
-          })}
-        </tbody>
-      </table>
+            ))}
+          </thead>
+          <tbody ref={animationParent}>
+            {table.getRowModel().rows.map(row => {
+              return (
+                <tr key={row.id} className="border-b transition duration-300 ease-in-out hover:bg-neutral-100 dark:border-neutral-500 dark:hover:bg-neutral-600">
+                  {row.getVisibleCells().map(cell => {
+                    return (
+                      <td key={cell.id} className="whitespace-nowrap px-6 py-4 md:py-4 text-sm md:text-base">
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
+                      </td>
+                    )
+                  })}
+                </tr>
+              )
+            })}
+          </tbody>
+        </table>
+      </div>
 
       {/* Pagination */}
       <div className="flex py-4 items-center">
@@ -135,7 +143,7 @@ function Table({ data, columns}: { data: transactionData[], columns: columns[]})
         </select>
 
       </div>
-    </>
+    </div>
   )
 }
 
