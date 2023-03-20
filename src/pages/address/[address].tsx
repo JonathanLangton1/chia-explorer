@@ -59,7 +59,7 @@ function Address({ addressData, chiaPrice, balance, transactions }: AddressPageP
             {
               header: 'From',
               accessorKey: 'from',
-              cell: (props: {getValue: () => string}) => addressData.address != props.getValue() ? <Link href={`/address/${props.getValue()}`} className="text-green-600 font-mono">{props.getValue().slice(0, 6).toString() + '...' + props.getValue().slice(-4).toString()}</Link> : <span className="font-mono">{props.getValue().slice(0, 6).toString() + '...' + props.getValue().slice(-4).toString()}</span>
+              cell: (props: {getValue: () => string}) => addressData.address != props.getValue() ? <Link href={`/address/${props.getValue()}`} className="text-green-600 font-mono">{props.getValue().slice(0, 6).toString() + '...' + props.getValue().slice(-4).toString()}</Link> : props.getValue().slice(0, 6).toString() + '...' + props.getValue().slice(-4).toString()
             },
             {
               header: '',
@@ -69,7 +69,7 @@ function Address({ addressData, chiaPrice, balance, transactions }: AddressPageP
             {
               header: 'To',
               accessorKey: 'to',
-              cell: (props: {getValue: () => string}) => addressData.address != props.getValue() ? <Link href={`/address/${props.getValue()}`} className="text-green-600 font-mono">{props.getValue().slice(0, 6).toString() + '...' + props.getValue().slice(-4).toString()}</Link> : <span className="font-mono">{props.getValue().slice(0, 6).toString() + '...' + props.getValue().slice(-4).toString()}</span>
+              cell: (props: {getValue: () => string}) => addressData.address != props.getValue() ? <Link href={`/address/${props.getValue()}`} className="text-green-600 font-mono">{props.getValue().slice(0, 6).toString() + '...' + props.getValue().slice(-4).toString()}</Link> : props.getValue().slice(0, 6).toString() + '...' + props.getValue().slice(-4).toString()
             },
             {
               header: 'Value',
