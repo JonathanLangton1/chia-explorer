@@ -127,7 +127,7 @@ function Address({ addressData, chiaPrice, balance, transactions }: AddressPageP
 
                 <div className="flex items-center py-4 px-16 rounded-[1rem] gap-2 bg-gradient-to-r from-green-200">
                     <p className='text-xl font-medium truncate ... pb-1 font-mono' ><span className="text-base">{addressData.address}</span></p>
-                    <Tippy content="Copy Address">
+                    <Tippy delay={1000} content="Copy Address">
                         <Copy onClick={() => void copyAddress()} className="opacity-60 min-w-[1.25rem] w-4 h-4 mt-1 cursor-pointer hover:text-green-600 transition focus:outline-0" data-tooltip-id="copy-address" data-tooltip-content="Copy Address" />
                     </Tippy>
                 </div>
@@ -160,6 +160,13 @@ function Address({ addressData, chiaPrice, balance, transactions }: AddressPageP
 
                 </div>
                 
+                {/* Tabs */}
+                <div className="flex items-center gap-2 -mb-4 overflow-x-auto pb-2">
+                    <div className="font-medium whitespace-nowrap text-sm bg-green-600 text-white cursor-pointer px-4 py-2 rounded-full">Transactions</div>
+                    <div className="font-medium whitespace-nowrap text-sm bg-slate-200 hover:bg-slate-300 transition cursor-pointer px-4 py-2 rounded-full">CAT Transfers</div>
+                    <div className="font-medium whitespace-nowrap text-sm bg-slate-200 hover:bg-slate-300 transition cursor-pointer px-4 py-2 rounded-full">Analytics</div>
+                    <div className="font-medium whitespace-nowrap text-sm bg-slate-200 hover:bg-slate-300 transition cursor-pointer px-4 py-2 rounded-full">Comments</div>
+                </div>
                 {/* Transaction Table */}
                 <div className="overflow-x-hidden bg-white md:p-8 rounded-[1rem] border-slate-200 border">
                     <Table {...{data, columns, resultName: "transactions"}} />
