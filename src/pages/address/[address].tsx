@@ -39,7 +39,7 @@ function Address({ addressData, chiaPrice, balance, transactions }: AddressPageP
             {
               header: 'Txn Hash',
               accessorKey: 'txnHash',
-              cell: (props: {getValue: () => string}) => <Link href={`/transaction/${props.getValue()}`} className="text-green-600">{props.getValue().slice(0, 6).toString() + '...' + props.getValue().slice(-4).toString()}</Link>
+              cell: (props: {getValue: () => string}) => <Link href={`/transaction/${props.getValue()}`} className="text-green-600 font-mono">{props.getValue().slice(0, 6).toString() + '...' + props.getValue().slice(-4).toString()}</Link>
             },
             {
               header: 'Type',
@@ -59,7 +59,7 @@ function Address({ addressData, chiaPrice, balance, transactions }: AddressPageP
             {
               header: 'From',
               accessorKey: 'from',
-              cell: (props: {getValue: () => string}) => addressData.address != props.getValue() ? <Link href={`/address/${props.getValue()}`} className="text-green-600">{props.getValue().slice(0, 6).toString() + '...' + props.getValue().slice(-4).toString()}</Link> : props.getValue().slice(0, 6).toString() + '...' + props.getValue().slice(-4).toString()
+              cell: (props: {getValue: () => string}) => addressData.address != props.getValue() ? <Link href={`/address/${props.getValue()}`} className="text-green-600 font-mono">{props.getValue().slice(0, 6).toString() + '...' + props.getValue().slice(-4).toString()}</Link> : <span className="font-mono">{props.getValue().slice(0, 6).toString() + '...' + props.getValue().slice(-4).toString()}</span>
             },
             {
               header: '',
@@ -69,7 +69,7 @@ function Address({ addressData, chiaPrice, balance, transactions }: AddressPageP
             {
               header: 'To',
               accessorKey: 'to',
-              cell: (props: {getValue: () => string}) => addressData.address != props.getValue() ? <Link href={`/address/${props.getValue()}`} className="text-green-600">{props.getValue().slice(0, 6).toString() + '...' + props.getValue().slice(-4).toString()}</Link> : props.getValue().slice(0, 6).toString() + '...' + props.getValue().slice(-4).toString()
+              cell: (props: {getValue: () => string}) => addressData.address != props.getValue() ? <Link href={`/address/${props.getValue()}`} className="text-green-600 font-mono">{props.getValue().slice(0, 6).toString() + '...' + props.getValue().slice(-4).toString()}</Link> : <span className="font-mono">{props.getValue().slice(0, 6).toString() + '...' + props.getValue().slice(-4).toString()}</span>
             },
             {
               header: 'Value',
@@ -120,9 +120,16 @@ function Address({ addressData, chiaPrice, balance, transactions }: AddressPageP
         <div className="w-full flex justify-center bg-[#FBFDFF] min-h-screen md:px-8 px-4">
             <div className="max-w-[1536px] w-full flex flex-col gap-8">
 
-                <div className='bg-green-600 py-8 md:px-16 px-8 rounded-full justify-start items-center flex gap-4'>
-                    <Copy onClick={() => void copyAddress()} className="text-white opacity-60 min-w-[1.25rem] w-5 h-5 mt-2 cursor-pointer hover:opacity-100 transition" />
-                    <p className='text-white/80 text-2xl font-medium truncate ...'>{addressData.address}</p>
+                {/* <div className='bg-green-600 py-8 md:px-16 px-8 rounded-full justify-start items-center flex gap-4'>
+                    <Tooltip id="copy-address" />
+                    <Copy onClick={() => void copyAddress()} className="text-white opacity-60 min-w-[1.25rem] w-5 h-5 mt-2 cursor-pointer hover:opacity-100 transition" data-tooltip-id="copy-address" data-tooltip-content="Copy Address" />
+                    <p className='text-white/80 text-2xl font-medium truncate ...' >{addressData.address}</p>
+                </div> */}
+
+                <div className="flex items-center py-4 px-16 rounded-[1rem] gap-2 bg-gradient-to-r from-green-200">
+                    <p className='text-xl font-medium truncate ... pb-1 font-mono' ><span className="text-base">{addressData.address}</span></p>
+                    <Tooltip id="copy-address" />
+                    <Copy onClick={() => void copyAddress()} className="opacity-60 min-w-[1.25rem] w-4 h-4 mt-1 cursor-pointer hover:text-green-600 transition focus:outline-0" data-tooltip-id="copy-address" data-tooltip-content="Copy Address" />
                 </div>
 
 
