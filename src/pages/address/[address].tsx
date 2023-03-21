@@ -1,11 +1,12 @@
 import { get_coin_records_by_puzzle_hash } from "chia-agent/api/rpc/full_node";
 import { type GetStaticProps, type GetStaticPaths } from 'next';
 import { DollarSign, Circle, Copy } from "react-feather";
-import relativeTime from "dayjs/plugin/relativeTime";
+import utc from "dayjs/plugin/relativeTime";
 import { address_to_puzzle_hash } from "chia-utils";
 import Table from "~/components/Table/Table";
-import { RPCAgent } from "chia-agent";
+import { RPCAgent, setLogLevel } from "chia-agent";
 import toast from 'react-hot-toast';
+import { createHash } from "crypto";
 import Tippy from '@tippyjs/react';
 import 'tippy.js/dist/tippy.css'; // optional
 import { useMemo } from 'react';
@@ -15,24 +16,38 @@ import dayjs from "dayjs";
 
 
 // Add plugin for dayjs
-dayjs.extend(relativeTime);
+dayjs.extend(utc);
+
+interface Transaction {
+    coin: {
+        amount: number
+        parent_coin_info: string
+        puzzle_hash: string
+        coin_id: string
+    }
+    coinbase: boolean
+    confirmed_block_index: number
+    spent: boolean
+    spent_block_index: number
+    timestamp: number
+}
 
 interface AddressPageProps {
     addressData: {
         address: string
-        txCount: number
-        balance: string
+        balance: number
+        transactions: Transaction[]
         flag: boolean
-    },
-    chiaPrice: {
-        usd: number
-        gbp: number
-    },
-    balance: number,
-    transactions: []
+        chiaPrice: {
+            usd: number
+            gbp: number
+        }
+    }
 }
 
-function Address({ addressData, chiaPrice, balance, transactions }: AddressPageProps) {
+function Address({ addressData }: AddressPageProps) {
+    console.log(addressData.transactions)
+
     // Transaction data
     const columns = useMemo(
         () => [
@@ -49,7 +64,7 @@ function Address({ addressData, chiaPrice, balance, transactions }: AddressPageP
               header: 'Age',
               accessorKey: 'age',
               cell: (props: {getValue: () => number}) => <Tippy content={dayjs(new Date( props.getValue() *1000)).format('DD/MM/YYYY HH:mm:ss')}><span>{dayjs(new Date( props.getValue() *1000)).fromNow()}</span></Tippy>
-            //   cell: (props: {getValue: () => number}) => <span data-tooltip-id="my-tooltip" data-tooltip-content={dayjs(new Date( props.getValue() *1000)).format('DD/MM/YYYY HH:mm:ss')}>{dayjs(new Date( props.getValue() *1000)).fromNow()}<Tooltip id="my-tooltip" style={{ borderRadius: '0.5rem' }} /></span>
+              //   cell: (props: {getValue: () => number}) => <span data-tooltip-id="my-tooltip" data-tooltip-content={dayjs(new Date( props.getValue() *1000)).format('DD/MM/YYYY HH:mm:ss')}>{dayjs(new Date( props.getValue() *1000)).fromNow()}<Tooltip id="my-tooltip" style={{ borderRadius: '0.5rem' }} /></span>
             },
             {
               header: 'Block',
@@ -78,23 +93,11 @@ function Address({ addressData, chiaPrice, balance, transactions }: AddressPageP
         ],
         [addressData.address]
     )
-    interface Transaction {
-        coin: {
-            amount: number
-            parent_coin_info: string
-            puzzle_hash: string
-        }
-        coinbase: boolean
-        confirmed_block_index: number
-        spent: boolean
-        spent_block_index: number
-        timestamp: number
-    }
 
       const data = useMemo(
-        () => transactions.map((transaction: Transaction) => (
+        () => addressData.transactions.map((transaction: Transaction) => (
             {
-                txnHash: transaction.coin.parent_coin_info,
+                txnHash: transaction.coin.coin_id,
                 type: 'Farmer Reward',
                 age: transaction.timestamp,
                 block: transaction.confirmed_block_index,
@@ -104,7 +107,7 @@ function Address({ addressData, chiaPrice, balance, transactions }: AddressPageP
                 value: transaction.coin.amount/1000000000000
             }
         )),
-        [transactions]
+        [addressData.transactions]
       )
 
       const copyAddress = async () => {
@@ -143,7 +146,7 @@ function Address({ addressData, chiaPrice, balance, transactions }: AddressPageP
                         </div>
                         <div>
                             <p className='text-[18px] font-medium'>Balance</p>
-                            <p className='font-bold text-2xl'>{balance.toLocaleString() + ' XCH'}</p>
+                            <p className='font-bold text-2xl'>{addressData.balance.toLocaleString() + ' XCH'}</p>
                         </div>
                     </div>
 
@@ -154,7 +157,7 @@ function Address({ addressData, chiaPrice, balance, transactions }: AddressPageP
                         </div>
                         <div>
                             <p className='text-[18px] font-medium'>Fiat Value</p>
-                            <p className='font-bold text-2xl'>${(Math.round((balance * chiaPrice.usd + Number.EPSILON) * 100) / 100).toLocaleString()}</p>
+                            <p className='font-bold text-2xl'>${(Math.round((addressData.balance * addressData.chiaPrice.usd + Number.EPSILON) * 100) / 100).toLocaleString()}</p>
                         </div>
                     </div>
 
@@ -190,69 +193,86 @@ export const getStaticPaths: GetStaticPaths = () => {
   };   
 
 export const getStaticProps: GetStaticProps = async (context) => {
+    console.log("HIIIIIII***")
     // Get address
     const address = context.params?.address as string;
 
-    // Get balance & transactions
-    const agent = new RPCAgent({
-        protocol: "https",
-        host: env.CHIA_NODE_HOST,
-        port: 8555,
-        ca_cert: undefined,
-        client_cert: env.CHIA_RPC_PRIVATE_DAEMON_CRT.replace(/\\n/g, '\n'),
-        client_key: env.CHIA_RPC_PRIVATE_DAEMON_KEY.replace(/\\n/g, '\n'),
-        skip_hostname_verification: true,
-    });
+    // Function to generate coin_id
+    const getCoinId = (parent_coin: string, puzzle_hash: string, amount: number) => {
+        const string = parent_coin.slice(2) + puzzle_hash.slice(2) + amount.toString(16);
+        return createHash('sha256').update(string).digest('hex')
+    }
 
-    let balance;
-    let transactions
+    setLogLevel('debug')
+    
+    
     try {
-        const puzzleHash: string = address_to_puzzle_hash(address);
-        // const puzzleHash: string = convertAddressToPuzzleHash(address);
-        const res = await get_coin_records_by_puzzle_hash(agent, {
-            puzzle_hash: puzzleHash,
-            include_spent_coins: false,
+        // Get balance & transactions from node
+        const agent = new RPCAgent({
+            protocol: "https",
+            host: env.CHIA_NODE_HOST,
+            port: 8555,
+            ca_cert: undefined,
+            client_cert: env.CHIA_RPC_PRIVATE_DAEMON_CRT.replace(/\\n/g, '\n'),
+            client_key: env.CHIA_RPC_PRIVATE_DAEMON_KEY.replace(/\\n/g, '\n'),
+            skip_hostname_verification: true,
         });
 
-        balance = (res as {coin_records: []})['coin_records'].reduce((accum, curr) => accum + (curr['coin']['amount']/1000000000000), 0)
-        transactions = (res as {coin_records: []})['coin_records']
-    } catch {
-        balance = 0;
-    }
+        const puzzle_hash = address_to_puzzle_hash(address);
+        const res = await get_coin_records_by_puzzle_hash(agent, {
+            puzzle_hash: puzzle_hash,
+            include_spent_coins: true,
+        });
 
+        // const balance = (res as {coin_records: []})['coin_records'].reduce((accum, curr) => accum + (curr['coin']['amount']/1000000000000), 0)
+        const balance = 0
 
-    // let addressData;
-    // await fetch(`https://www.chia.tt/api/chia/blockchain/address/${address}`)
-    // .then(res => res.json())
-    // .then((res: AddressData) => {
-    //     addressData = res;
-    // })
-    const addressData = {
-        address: address,
-        txCount: 1,
-        balance: "2.334345",
-        flag: false
-    }
+        const transactions = res['coin_records']
+        let transactions_with_coin_id = [...transactions];
 
-    // Get Chia Price
-    // let chiaPrice;
-    // await fetch('https://api.coingecko.com/api/v3/simple/price?ids=chia&vs_currencies=usd%2Cgbp')
-    // .then(res => res.json())
-    // .then((res: ChiaPrice) => {
-    //     chiaPrice = res['chia'];
-    // })
-
-    const chiaPrice = {
-        usd: 38.69,
-        gbp: 31.77
-    }
-
-    return {
-        props: {
-            addressData,
-            chiaPrice,
-            balance,
-            transactions
+        
+        if (transactions && transactions.length !== 0) {
+            transactions_with_coin_id.map((transaction) => {transaction.coin.coin_id = getCoinId(transaction.coin.parent_coin_info, transaction.coin.puzzle_hash, transaction.coin.amount)});
+            console.log("*****************", transactions_with_coin_id[0])
+        } else {
+            transactions_with_coin_id = []
         }
+
+        const addressData = {
+            address: address,
+            balance: balance,
+            transactions: transactions_with_coin_id,
+            flag: false,
+            chiaPrice: {
+                usd: 38.69,
+                gbp: 31.77
+            }
+        }
+
+        return {
+            props: {
+                addressData,
+            }
+        }
+
+    } catch {
+        const addressData = {
+            address: address,
+            balance: 0,
+            transactions: [],
+            flag: false,
+            chiaPrice: {
+                usd: 38.69,
+                gbp: 31.77
+            }
+        }
+        console.log('ERROR: Could not contact node')
+
+        return {
+            props: {
+                addressData,
+            }
+        }
+
     }
 }

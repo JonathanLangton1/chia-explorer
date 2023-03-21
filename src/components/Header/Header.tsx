@@ -33,7 +33,7 @@ function Header() {
       
 
     return (
-        <header className="flex justify-center bg-[#FBFDFF] px-8">
+        <header className="flex justify-center bg-[#FBFDFF] md:px-8 px-4">
             <div className="max-w-[1536px] w-full gap-8 md:gap-12 flex py-8 items-center flex-col md:flex-row">
                 <Link href={'/'}>
                     <div className='flex items-center gap-2 hover:opacity-80 transition w-max'>

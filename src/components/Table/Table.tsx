@@ -1,6 +1,9 @@
-import { useReactTable, getCoreRowModel, getFilteredRowModel, getPaginationRowModel, flexRender } from '@tanstack/react-table'
+import { useReactTable, getCoreRowModel, getFilteredRowModel, getPaginationRowModel, getSortedRowModel, flexRender, type SortingState } from '@tanstack/react-table'
 import { ChevronsLeft, ChevronLeft, ChevronsRight, ChevronRight } from 'react-feather';
 import { useAutoAnimate } from '@formkit/auto-animate/react'
+import { useState } from 'react';
+import * as React from 'react';
+
 
 interface transactionData {
   txnHash: string
@@ -19,16 +22,22 @@ interface columns {
   cell?: (props: {getValue: () => any}) => any
 }
 
-function Table(
-  { data, columns, resultName='results'}: { data: transactionData[], columns: columns[], resultName: string}) {
+function Table({ data, columns, resultName='results'}: { data: transactionData[], columns: columns[], resultName: string}) {
+  const [sorting, setSorting] = useState<SortingState>([{desc: true, id: "age"}])
 
   const [animationParent] = useAutoAnimate()
 
   const table = useReactTable({
     data,
     columns,
+    state: {
+      sorting,
+    },
+    enableSorting: true,
+    onSortingChange: setSorting,
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
+    getSortedRowModel: getSortedRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     debugTable: false,
   })
