@@ -1,4 +1,4 @@
-import { get_coin_records_by_puzzle_hash } from "chia-agent/api/rpc/full_node";
+import { get_coin_records_by_puzzle_hash, type CoinRecord } from "chia-agent/api/rpc/full_node";
 import { type GetStaticProps, type GetStaticPaths } from 'next';
 import { DollarSign, Circle, Copy } from "react-feather";
 import utc from "dayjs/plugin/relativeTime";
@@ -46,7 +46,6 @@ interface AddressPageProps {
 }
 
 function Address({ addressData }: AddressPageProps) {
-    console.log(addressData.transactions)
 
     // Transaction data
     const columns = useMemo(
@@ -193,7 +192,6 @@ export const getStaticPaths: GetStaticPaths = () => {
   };   
 
 export const getStaticProps: GetStaticProps = async (context) => {
-    console.log("HIIIIIII***")
     // Get address
     const address = context.params?.address as string;
 
@@ -230,10 +228,17 @@ export const getStaticProps: GetStaticProps = async (context) => {
         const transactions = res['coin_records']
         let transactions_with_coin_id = [...transactions];
 
-        
+        interface ExtendedCoinRecord {
+            coin: {
+                coin_id?: string
+                puzzle_hash: string
+                parent_coin_info: string
+                amount: number
+            }
+        }
+
         if (transactions && transactions.length !== 0) {
-            transactions_with_coin_id.map((transaction) => {transaction.coin.coin_id = getCoinId(transaction.coin.parent_coin_info, transaction.coin.puzzle_hash, transaction.coin.amount)});
-            console.log("*****************", transactions_with_coin_id[0])
+            transactions_with_coin_id.map((transaction: ExtendedCoinRecord) => {transaction.coin.coin_id = getCoinId(transaction.coin.parent_coin_info, transaction.coin.puzzle_hash, transaction.coin.amount)});
         } else {
             transactions_with_coin_id = []
         }
