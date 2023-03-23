@@ -46,7 +46,6 @@ interface AddressPageProps {
 }
 
 function Address({ addressData }: AddressPageProps) {
-
     // Transaction data
     const columns = useMemo(
         () => [
@@ -192,8 +191,22 @@ export const getStaticPaths: GetStaticPaths = () => {
   };   
 
 export const getStaticProps: GetStaticProps = async (context) => {
+
+    
     // Get address
     const address = context.params?.address as string;
+
+    // Build props data to be modified
+    let addressData = {
+        address: address,
+        balance: 0,
+        transactions: [] as Transaction[],
+        flag: false,
+        chiaPrice: {
+            usd: 38.69,
+            gbp: 31.77
+        }
+    }
 
     // Function to generate coin_id
     const getCoinId = (parent_coin: string, puzzle_hash: string, amount: number) => {
@@ -201,83 +214,59 @@ export const getStaticProps: GetStaticProps = async (context) => {
         return createHash('sha256').update(string).digest('hex')
     }
 
-    setLogLevel('debug')
     
+    // Get balance & transactions from node
+    const headers = new Headers();
+    headers.append("Content-Type", "application/json");
     
-    try {
-        // Get balance & transactions from node
-        const agent = new RPCAgent({
-            protocol: "https",
-            host: env.CHIA_NODE_HOST,
-            port: 8555,
-            ca_cert: undefined,
-            client_cert: env.CHIA_RPC_PRIVATE_DAEMON_CRT.replace(/\\n/g, '\n'),
-            client_key: env.CHIA_RPC_PRIVATE_DAEMON_KEY.replace(/\\n/g, '\n'),
-            skip_hostname_verification: true,
+    // Add puzzle hash to request
+    const raw = JSON.stringify({
+     "puzzle_hash": address_to_puzzle_hash(address),
+     "include_spent_coins": true
+    });
+    
+    const requestOptions = {
+        method: 'POST',
+        headers: headers,
+        body: raw,
+    };
+
+    await fetch(`https://kraken.fireacademy.io/${env.FIREACADEMY_API_KEY}/leaflet/get_coin_records_by_puzzle_hash`, requestOptions)
+        .then(response => response.json())
+        // On success
+        .then(result => {
+            // Add type to response
+            const r = result as {coin_records: Transaction[]}
+
+            // Extract coin records
+            const transactions = r['coin_records']
+
+            // Calculate Balance
+            const balance = transactions.reduce((accum: number, curr: {coin: {amount: number}}) => accum + (curr['coin']['amount']/1000000000000), 0)
+
+            // Add coin ID property to transactions
+            const transactions_with_coin_id = [...transactions]
+            transactions_with_coin_id.map(transaction => {transaction.coin.coin_id = getCoinId(transaction.coin.parent_coin_info, transaction.coin.puzzle_hash, transaction.coin.amount)});
+
+            // Build props data
+            addressData = {
+                address: address,
+                balance: balance,
+                transactions: transactions_with_coin_id,
+                flag: false,
+                chiaPrice: {
+                    usd: 38.69,
+                    gbp: 31.77
+                }
+            }
+        })
+        .catch(error => {
+            console.log('Error while fetching address data', error)
         });
 
-        const puzzle_hash = address_to_puzzle_hash(address);
-        const res = await get_coin_records_by_puzzle_hash(agent, {
-            puzzle_hash: puzzle_hash,
-            include_spent_coins: true,
-        });
-
-        // const balance = (res as {coin_records: []})['coin_records'].reduce((accum, curr) => accum + (curr['coin']['amount']/1000000000000), 0)
-        const balance = 0
-
-        const transactions = res['coin_records']
-        let transactions_with_coin_id = [...transactions];
-
-        interface ExtendedCoinRecord {
-            coin: {
-                coin_id?: string
-                puzzle_hash: string
-                parent_coin_info: string
-                amount: number
-            }
+    return {
+        props: {
+            addressData,
         }
-
-        if (transactions && transactions.length !== 0) {
-            transactions_with_coin_id.map((transaction: ExtendedCoinRecord) => {transaction.coin.coin_id = getCoinId(transaction.coin.parent_coin_info, transaction.coin.puzzle_hash, transaction.coin.amount)});
-        } else {
-            transactions_with_coin_id = []
-        }
-
-        const addressData = {
-            address: address,
-            balance: balance,
-            transactions: transactions_with_coin_id,
-            flag: false,
-            chiaPrice: {
-                usd: 38.69,
-                gbp: 31.77
-            }
-        }
-
-        return {
-            props: {
-                addressData,
-            }
-        }
-
-    } catch {
-        const addressData = {
-            address: address,
-            balance: 0,
-            transactions: [],
-            flag: false,
-            chiaPrice: {
-                usd: 38.69,
-                gbp: 31.77
-            }
-        }
-        console.log('ERROR: Could not contact node')
-
-        return {
-            props: {
-                addressData,
-            }
-        }
-
     }
 }

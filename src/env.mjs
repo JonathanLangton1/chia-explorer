@@ -24,6 +24,7 @@ const server = z.object({
   CHIA_NODE_HOST: z.string(),
   CHIA_RPC_PRIVATE_DAEMON_CRT: z.string(),
   CHIA_RPC_PRIVATE_DAEMON_KEY: z.string(),
+  FIREACADEMY_API_KEY: z.string(),
 });
 
 /**
@@ -50,7 +51,7 @@ const processEnv = {
   CHIA_NODE_HOST: process.env.CHIA_NODE_HOST,
   CHIA_RPC_PRIVATE_DAEMON_CRT: process.env.CHIA_RPC_PRIVATE_DAEMON_CRT,
   CHIA_RPC_PRIVATE_DAEMON_KEY: process.env.CHIA_RPC_PRIVATE_DAEMON_KEY,
-  // NEXT_PUBLIC_CLIENTVAR: process.env.NEXT_PUBLIC_CLIENTVAR,
+  FIREACADEMY_API_KEY: process.env.FIREACADEMY_API_KEY,
 };
 
 // Don't touch the part below
