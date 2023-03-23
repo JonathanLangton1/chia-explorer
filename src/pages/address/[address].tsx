@@ -242,7 +242,12 @@ export const getStaticProps: GetStaticProps = async (context) => {
             const transactions = r['coin_records']
 
             // Calculate Balance
-            const balance = transactions.reduce((accum: number, curr: {coin: {amount: number}}) => accum + (curr['coin']['amount']/1000000000000), 0)
+            const balance = transactions.reduce((accum: number, curr: Transaction) => {
+                if (curr['spent']) {
+                    return accum + (curr['coin']['amount']/1000000000000)
+                }
+                return accum;
+            }, 0)
 
             // Add coin ID property to transactions
             const transactions_with_coin_id = [...transactions]
