@@ -1,8 +1,9 @@
 import { get_coin_records_by_puzzle_hash, type CoinRecord } from "chia-agent/api/rpc/full_node";
+import FormattedNumber from "~/components/FormattedNumber/FormattedNumber";
 import { type GetStaticProps, type GetStaticPaths } from 'next';
 import { DollarSign, Circle, Copy } from "react-feather";
 import utc from "dayjs/plugin/relativeTime";
-import { address_to_puzzle_hash } from "chia-utils";
+import { address_to_puzzle_hash, puzzle_hash_to_address } from "chia-utils";
 import Table from "~/components/Table/Table";
 import { RPCAgent, setLogLevel } from "chia-agent";
 import toast from 'react-hot-toast';
@@ -23,7 +24,8 @@ interface Transaction {
         amount: number
         parent_coin_info: string
         puzzle_hash: string
-        coin_id: string
+        coin_id?: string
+        sender_address?: string
     }
     coinbase: boolean
     confirmed_block_index: number
@@ -46,6 +48,7 @@ interface AddressPageProps {
 }
 
 function Address({ addressData }: AddressPageProps) {
+    console.log(addressData.transactions)
     // Transaction data
     const columns = useMemo(
         () => [
@@ -72,7 +75,7 @@ function Address({ addressData }: AddressPageProps) {
             {
               header: 'From',
               accessorKey: 'from',
-              cell: (props: {getValue: () => string}) => addressData.address != props.getValue() ? <Link href={`/address/${props.getValue()}`} className="text-green-600 font-mono">{props.getValue().slice(0, 6).toString() + '...' + props.getValue().slice(-4).toString()}</Link> : <span className="font-mono">{props.getValue().slice(0, 6).toString() + '...' + props.getValue().slice(-4).toString()}</span>
+              cell: (props: {getValue: () => string}) => props.getValue() === '' ? 'Farming Reward' : addressData.address != props.getValue() ? <Link href={`/address/${props.getValue()}`} className="text-green-600 font-mono">{props.getValue().slice(0, 6).toString() + '...' + props.getValue().slice(-4).toString()}</Link> : <span className="font-mono">{props.getValue().slice(0, 6).toString() + '...' + props.getValue().slice(-4).toString()}</span>
             },
             {
               header: '',
@@ -95,17 +98,17 @@ function Address({ addressData }: AddressPageProps) {
       const data = useMemo(
         () => addressData.transactions.map((transaction: Transaction) => (
             {
-                txnHash: transaction.coin.coin_id,
+                txnHash: transaction.coin.coin_id ? transaction.coin.coin_id : '',
                 type: 'Farmer Reward',
                 age: transaction.timestamp,
                 block: transaction.confirmed_block_index,
-                from: String(transaction.confirmed_block_index).charAt(0) === '1' ? 'xch1f0ryxk6qn096hefcwrdwpuph2hm24w69jnzezhkfswk0z2jar7aq5zzpfj' : 'xch1gfp4u27zc76v2hpx4kkp6f53luw6qnyy0s8r6d9x5edr2sfle32qvrwlr7',
-                direction: String(transaction.confirmed_block_index).charAt(0) === '1' ? 'OUT' : 'IN',
-                to: String(transaction.confirmed_block_index).charAt(0) !== '1' ? 'xch1f0ryxk6qn096hefcwrdwpuph2hm24w69jnzezhkfswk0z2jar7aq5zzpfj' : 'xch1gfp4u27zc76v2hpx4kkp6f53luw6qnyy0s8r6d9x5edr2sfle32qvrwlr7',
+                from: transaction.coinbase ? '' : transaction.coin.sender_address ? transaction.coin.sender_address : '',//String(transaction.confirmed_block_index).charAt(0) === '1' ? 'xch1f0ryxk6qn096hefcwrdwpuph2hm24w69jnzezhkfswk0z2jar7aq5zzpfj' : 'xch1gfp4u27zc76v2hpx4kkp6f53luw6qnyy0s8r6d9x5edr2sfle32qvrwlr7',
+                direction: transaction.coinbase ? 'IN' : String(transaction.confirmed_block_index).charAt(0) === '1' ? 'OUT' : 'IN',
+                to: addressData.address,
                 value: transaction.coin.amount/1000000000000
             }
         )),
-        [addressData.transactions]
+        [addressData.transactions, addressData.address]
       )
 
       const copyAddress = async () => {
@@ -144,7 +147,7 @@ function Address({ addressData }: AddressPageProps) {
                         </div>
                         <div>
                             <p className='text-[18px] font-medium'>Balance</p>
-                            <p className='font-bold text-2xl'>{addressData.balance.toLocaleString() + ' XCH'}</p>
+                            <p className='font-bold text-2xl'><FormattedNumber number={addressData.balance} /> XCH</p>
                         </div>
                     </div>
 
@@ -188,7 +191,7 @@ export const getStaticPaths: GetStaticPaths = () => {
       paths: [],
       fallback: 'blocking'
     };
-  };   
+};   
 
 export const getStaticProps: GetStaticProps = async (context) => {
 
@@ -243,7 +246,7 @@ export const getStaticProps: GetStaticProps = async (context) => {
 
             // Calculate Balance
             const balance = transactions.reduce((accum: number, curr: Transaction) => {
-                if (curr['spent']) {
+                if (!curr['spent']) {
                     return accum + (curr['coin']['amount']/1000000000000)
                 }
                 return accum;
@@ -268,6 +271,56 @@ export const getStaticProps: GetStaticProps = async (context) => {
         .catch(error => {
             console.log('Error while fetching address data', error)
         });
+
+
+
+
+        // Get sender addresses for unspent coins
+        const unspentCoinIndexValues = []
+        const unspentCoinNames = addressData.transactions.map((transaction, index) => {
+            if (!transaction.spent && !transaction.coinbase) {
+                unspentCoinIndexValues.push(index)
+                return transaction.coin.parent_coin_info
+            }
+        }).filter(x => x !== undefined);
+
+        const headers1 = new Headers();
+        headers.append("Content-Type", "application/json");
+        
+        // Add puzzle hash to request
+        const raw1 = JSON.stringify({
+         "names": unspentCoinNames,
+         "include_spent_coins": true
+        });
+        
+        const requestOptions1 = {
+            method: 'POST',
+            headers: headers1,
+            body: raw1,
+        };
+
+        await fetch(`https://kraken.fireacademy.io/${env.FIREACADEMY_API_KEY}/leaflet/get_coin_records_by_names`, requestOptions1)
+            .then(response => response.json())
+            .then(result => {
+            // Add type to response
+            const r = result as {coin_records: Transaction[]}
+
+            // Extract coin records
+            const transactions = r['coin_records']
+
+            const senderAddresses = unspentCoinNames.map((name, i) => {
+                return {name: name, sender_address: puzzle_hash_to_address(transactions[i].coin.puzzle_hash)}
+            });
+            console.log(senderAddresses)
+            unspentCoinIndexValues.forEach((value, index) => {
+                addressData.transactions[value].coin.sender_address = senderAddresses[index].sender_address
+            });
+
+            })
+
+
+
+
 
     return {
         props: {
