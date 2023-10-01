@@ -276,7 +276,7 @@ export const getStaticProps: GetStaticProps = async (context) => {
 
 
         // Get sender addresses for unspent coins
-        const unspentCoinIndexValues = []
+        const unspentCoinIndexValues: number[] = []
         const unspentCoinNames = addressData.transactions.map((transaction, index) => {
             if (!transaction.spent && !transaction.coinbase) {
                 unspentCoinIndexValues.push(index)
@@ -309,12 +309,23 @@ export const getStaticProps: GetStaticProps = async (context) => {
             const transactions = r['coin_records']
 
             const senderAddresses = unspentCoinNames.map((name, i) => {
-                return {name: name, sender_address: puzzle_hash_to_address(transactions[i].coin.puzzle_hash)}
-            });
-            console.log(senderAddresses)
+                const transaction = transactions[i];
+                if (transaction) {
+                    const puzzleHash = transaction.coin.puzzle_hash;
+                    return { name: name, sender_address: puzzle_hash_to_address(puzzleHash) };
+                }
+                return null; // handle the case where transaction is undefined
+            }).filter(Boolean);
+
             unspentCoinIndexValues.forEach((value, index) => {
-                addressData.transactions[value].coin.sender_address = senderAddresses[index].sender_address
+                const transaction = addressData.transactions[value];
+                const senderAddressData = senderAddresses[index];
+            
+                if (transaction?.coin && senderAddressData) {
+                    transaction.coin.sender_address = senderAddressData.sender_address;
+                }
             });
+            
 
             })
 
