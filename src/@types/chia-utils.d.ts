@@ -15,6 +15,8 @@ declare module 'chia-utils' {
     export function decode_puzzle_hash(puzzleHash: string): DecodedPuzzleHash;
 
     export function address_to_puzzle_hash(address: string): string;
+    
+    export function puzzle_hash_to_address(puzzle_hash: string): string;
   
     /**
      * Encodes a puzzle hash from its prefix, puzzle hash, and solution (if any).
